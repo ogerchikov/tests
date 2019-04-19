@@ -1,0 +1,199 @@
+<!--
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+
+<!doctype html>
+<html>
+	<head>
+		<style>
+		  body {
+			font-family: Helvetica;
+		  }
+		  .animated {
+			width: 200px;
+			height: 200px;
+			background-color: hotpink;
+			margin-bottom: 10px;
+			border-radius: 10%;
+			position: absolute;
+			left: 0px;
+		  }
+		  main {
+			width: 200px;
+			height: 200px;
+			border: 1px solid black;
+			overflow: auto;
+			position: absolute;
+			top: 650px;
+		  }
+		  .scroller {
+			overflow: auto;
+			width: 200px;
+			height: 200px;
+			position: absolute;
+			top: 650px;
+			background-color: yellow;
+			--display:none;
+		  }
+		  .contents {
+			height: 1000px;
+			width: 50%;
+			background-color: green;
+		  }
+		</style>
+	<head>
+	<body>
+		<div id="a" style ="top: 100px" class="animated">
+		</div>
+		<div id="b" style ="top: 330px" class="animated">
+		</div>
+		<div style ="top: 560px; width: 500px; height:10px;">
+		</div>
+		<div id="scroller" class="scroller">
+		  <div class="contents"></div>
+		</div>
+
+		<button onclick="startAW()">Start animation</button>
+		<button onclick="setOptions(200)">setOptions 200</button>
+		<button onclick="setPlaybackRate(1)">setPlaybackRate 1</button>
+		<button onclick="setPlaybackRate(2)">setPlaybackRate 2</button>
+		<button onclick="setPlaybackRate(0.2)">setPlaybackRate 0.2</button>
+		<button onclick="doPause()">pause</button>
+		<button onclick="doPlay()">play</button>
+		<script>
+		  if(!CSS.animationWorklet)
+		  {
+			alert("AnimationWorklet isn't supported!");
+		  }
+
+		  CSS.animationWorklet.addModule("passthrough.js");
+		  
+		  var wa1;
+		  var wa2;
+		  var playbackRate = 1;
+		  var scroller = document.getElementById('scroller');
+		  function startAW(){
+			  var scrollTL = new ScrollTimeline({
+				  scrollSource: document.getElementById('scroller'), 
+				  orientation: "vertical", // "horizontal" or "vertical".
+				  //startScrollOffset: "20%",
+				  //endScrollOffset: "80%",
+				  timeRange: 2000
+				});
+
+			  scroller.scrollTop = 200;
+			  //scroller.style.display="none";
+			  //scroller.scrollTop;
+
+			  wa1 = new WorkletAnimation(
+				'passthrough',
+				new KeyframeEffect(
+				  document.querySelector('#a'), 
+				  [
+				  
+					{
+					  transform: 'translateX(0)'
+					},
+					{
+					  transform: 'translateX(500px)'
+					}
+					
+				  ],
+				  {
+					duration: 2000, 
+					fill: 'both'
+				  }
+				),
+				scrollTL
+			  );
+
+			  wa1.playbackRate = playbackRate;
+			  wa1.play();
+
+
+
+			  wa2 = new WorkletAnimation(
+				'passthrough',
+				new KeyframeEffect(
+				  document.querySelector('#b'), 
+				  [
+					{
+					  left: '0px'
+					},
+					{
+					  left: '500px'
+					}
+				  ],
+				  {
+					duration: 2000, 
+					fill: 'both'
+				  }
+				),
+				scrollTL
+			  );
+			  wa2.playbackRate = playbackRate;
+			  
+			  wa2.play();
+
+			  <!-- console.log("1 wa2.currentTime=" + wa2.currentTime); -->
+			  <!-- window.setTimeout(function(){ -->
+				  <!-- scroller.style.overflow="visible"; -->
+				  <!-- scroller.style.overflow; -->
+				  <!-- console.log("1 wa2.currentTime=" + wa2.currentTime); -->
+				  <!-- //scroller.style.overflow="visible"; -->
+				  <!-- scroller.scrollTop = 300; -->
+				  <!-- console.log("scroller.scrollTop=" + scroller.scrollTop); -->
+				  
+				  
+				  <!-- console.log("2 wa2.currentTime=" + wa2.currentTime); -->
+				  
+				  <!-- window.setTimeout(function(){ -->
+						
+						<!-- console.log("3 wa2.currentTime=" + wa2.currentTime); -->
+						<!-- scroller.style.overflow="scroll"; -->
+				  <!-- }, 3000); -->
+			  <!-- }, 3000); -->
+			  window.setTimeout(function(){
+			  scroller.scrollTop = 200;
+			  }, 300);
+	
+		  }
+		  <!-- registerPassthroughAnimator().then(() => { -->
+		    <!-- startAW(); -->
+		  <!-- }); -->
+		  function setOptions(time)
+		  {
+		      var options = {"startTime" : 200};
+		      //options.startTime = 200;
+		      if(wa1)wa1.updateOptions(options);
+			  if(wa2)wa2.updateOptions(options);
+		  }
+		  function setPlaybackRate(rate)
+		  {
+		      playbackRate = rate;
+		      if(wa1)wa1.playbackRate = playbackRate;
+			  if(wa2)wa2.playbackRate = playbackRate;
+		  }
+		  function doPause()
+		  {
+		      if(wa1)wa1.pause();
+			  if(wa2)wa2.pause();
+		  }
+		  function doPlay()
+		  {
+		      if(wa1)wa1.play();
+			  if(wa2)wa2.play();
+			  
+		  }
+		</script>
+	</body>
+<html>
